@@ -80,12 +80,14 @@ def extract_and_decode_image(url):
     print("Press Enter to exit...")
     input()
 
+
 def main():
     parser = argparse.ArgumentParser(description="Extract and decode hidden messages from images hosted on Imgur.")
     parser.add_argument("url", help="The URL of the Imgur page containing the image.")
     args = parser.parse_args()
 
     message = extract_and_decode_image(args.url)
+
 
 if __name__ == "__main__":
     main()

@@ -10,6 +10,7 @@ import time
 import numpy as np
 import urllib.parse
 
+
 def paraweb_tumblr(url):
     
     driver = webdriver.Chrome()
@@ -63,12 +64,14 @@ def paraweb_tumblr(url):
     print("Press Enter to exit...")
     input()
 
+
 def main():
     parser = argparse.ArgumentParser(description="Extract hidden messages from Tumblr images.")
     parser.add_argument("url", type=str, help="The URL of the Tumblr post.")
     args = parser.parse_args()
 
     paraweb_tumblr(args.url)
+
 
 if __name__ == "__main__":
     main()

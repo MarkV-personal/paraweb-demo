@@ -54,6 +54,7 @@ def enhanced_encode_message(image_path, message, output_path, message_file=None)
     encoded = Image.fromarray(pixels)
     encoded.save(output_path)
 
+
 def main():
     parser = argparse.ArgumentParser(description='Encode a message or the contents of a file into an image using steganography.')
     parser.add_argument('image_path', type=str, help='Path to the input image file')
@@ -75,5 +76,7 @@ def main():
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
+
 if __name__ == '__main__':
     main()
+    

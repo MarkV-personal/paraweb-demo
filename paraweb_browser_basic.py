@@ -10,6 +10,7 @@ import time
 import numpy as np
 import urllib.parse
 
+
 def paraweb(url):
     
     driver = webdriver.Chrome()
@@ -62,12 +63,14 @@ def paraweb(url):
     print("Press Enter to exit...")
     input()
 
+
 def main():
     parser = argparse.ArgumentParser(description="Extract hidden messages from web pages")
     parser.add_argument("url", type=str, help="The URL of the web page with a Paraweb image.")
     args = parser.parse_args()
 
     paraweb(args.url)
+
 
 if __name__ == "__main__":
     main()

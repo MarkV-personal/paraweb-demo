@@ -8,6 +8,7 @@ from io import BytesIO
 import urllib.parse
 from selenium import webdriver
 
+
 def paraweb_flickr(url):
     # Use requests to download the image
     response = requests.get(url)
@@ -54,12 +55,14 @@ def paraweb_flickr(url):
         print(f"Failed to download the image, status code: {response.status_code}")
         return None
 
+
 def main():
     parser = argparse.ArgumentParser(description="Extract hidden messages from Flickr images.")
     parser.add_argument("url", help="The URL of the Flickr image.")
     args = parser.parse_args()
 
     paraweb_flickr(args.url)
+
 
 if __name__ == "__main__":
     main()
