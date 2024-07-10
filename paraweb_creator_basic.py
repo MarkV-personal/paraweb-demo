@@ -12,43 +12,56 @@ def read_message_from_file(file_path):
         exit(1)
 
 
-def enhanced_encode_message(image_path, message, output_path, message_file=None):
+def enhanced_encode_message(image_path, messages, output_path, message_file=None):
     # If a message file is provided, override the message with the file's content
     if message_file:
-        message = read_message_from_file(message_file)
+        messages = read_message_from_file(message_file)
+
+    if type(messages) == str:
+        messages = [messages, '', '']
+    if not hasattr(messages, "__len__"):
+        print(f"Error: message is of invalid data type: {messages}")
+        return
+    elif len(messages) < 3:
+        print(f"Error: message length less than 3: {len(messages)}")
+        return
 
     img = Image.open(image_path)
     encoded = img.copy()
     pixels = np.array(encoded)
-    
-    # Convert message to binary using UTF-8 encoding
-    message_bytes = message.encode('utf-8')  # Encode the message as bytes using UTF-8
-    message_bits = ''.join([bin(byte)[2:].rjust(8, '0') for byte in message_bytes])
-    
-    # Include the length of the message as a 32-bit binary at the beginning
-    message_length = len(message_bits)
-    length_bits = bin(message_length)[2:].rjust(32, '0')
-    
-    # Error correction: Repeat each bit twice
-    message_bits = length_bits + ''.join(bit * 2 for bit in message_bits)
 
-    if len(message_bits) > (pixels.shape[0] * pixels.shape[1] * 3 * 2 - 32):
-        raise ValueError("The image is too small to hold this message.")
-    
-    data_index = 0
-    for row in range(pixels.shape[0]):
-        for col in range(pixels.shape[1]):
-            if data_index < len(message_bits):
-                # Store two bits in each channel
-                for channel in range(3):  # RGB channels
+    for channel in range(len(messages)):
+        # skip if null or empty message is provided for this channel
+        if not messages[channel]:
+            continue
+
+        # Convert message to binary using UTF-8 encoding
+        message_bytes = messages[channel].encode('utf-8')  # Encode the message as bytes using UTF-8
+        message_bits = ''.join([bin(byte)[2:].rjust(8, '0') for byte in message_bytes])
+
+        # Include the length of the message as a 32-bit binary at the beginning
+        message_length = len(message_bits)
+        length_bits = bin(message_length)[2:].rjust(32, '0')
+
+        # Error correction: Repeat each bit twice
+        message_bits = length_bits + ''.join(bit * 2 for bit in message_bits)
+
+        if len(message_bits) > (pixels.shape[0] * pixels.shape[1] * 2 - 32):
+            raise ValueError("The image is too small to hold this message.")
+
+        data_index = 0
+        for row in range(pixels.shape[0]):
+            for col in range(pixels.shape[1]):
+                if data_index < len(message_bits):
+                    # Store two bits in corresponding RGB channel
                     bits_to_store = message_bits[data_index:data_index+2] if data_index + 1 < len(message_bits) else message_bits[-1] + '0'
                     pixels[row, col, channel] &= 0b11111100  # Clear the last two bits
                     pixels[row, col, channel] |= int(bits_to_store, 2)  # Set the last two bits
                     data_index += 2
-            else:
+                else:
+                    break
+            if data_index >= len(message_bits):
                 break
-        if data_index >= len(message_bits):
-            break
 
     # Save the modified image
     encoded = Image.fromarray(pixels)
