@@ -2,3 +2,4 @@ selenium
 Pillow
 numpy
 requests
+rsa

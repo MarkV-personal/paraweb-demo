@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
+
+import rsa
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from PIL import Image
@@ -11,21 +13,25 @@ import numpy as np
 import urllib.parse
 
 
-def paraweb(url, channels=[True, False, False], local=False):
-    
-    driver = webdriver.Chrome()
-    driver.get(url)
-
-    time.sleep(2)
-
-    # Locate the image with a width of 1024px using the updated Selenium API
-    image_element = driver.find_element(By.XPATH, '//img')
-
-    # Extract the image URL
-    image_url = image_element.get_attribute('src')
+def paraweb(url, channels=[True, False, False], local=False, decryption_file=""):
+    # load key if needed
+    if decryption_file:
+        with open(decryption_file, 'rb+') as private_file:
+            private_key = rsa.PublicKey.load_pkcs1(private_file.read(), format='PEM')
 
     # Use requests to get the image content
     if not local:
+        driver = webdriver.Chrome()
+        driver.get(url)
+
+        time.sleep(2)
+
+        # Locate the image with a width of 1024px using the updated Selenium API
+        image_element = driver.find_element(By.XPATH, '//img')
+
+        # Extract the image URL
+        image_url = image_element.get_attribute('src')
+
         response = requests.get(image_url)
         image = Image.open(BytesIO(response.content))
     else:
@@ -45,6 +51,11 @@ def paraweb(url, channels=[True, False, False], local=False):
     # TODO protect against bad utf (encountered in unencoded files)
     for channel in range(3):  # Assuming RGB channels
         if channels[channel]:
+            # decrypt if necessary
+            if private_key:
+                print(f"""Decrypting: {binary_messages[channel]}, Result: {rsa.decrypt(binary_messages[channel], private_key)}""")
+                binary_messages[channel] = rsa.decrypt(binary_messages[channel], private_key)
+
             # Extract the length of the actual message from the first 32 bits
             length_bits = binary_messages[channel][:32]
             message_length = int(length_bits, 2)  # Convert binary to int
@@ -77,9 +88,10 @@ def paraweb(url, channels=[True, False, False], local=False):
 def main():
     parser = argparse.ArgumentParser(description="Extract hidden messages from web pages")
     parser.add_argument("url", type=str, help="The URL of the web page with a Paraweb image.")
+    parser.add_argument("--decrypt", type=str, help="The path to the PEM file with the private decryption key.")
     args = parser.parse_args()
 
-    paraweb(args.url, local=True)
+    paraweb(args.url, local=True, decrypt_file=args.decrypt)
 
 
 if __name__ == "__main__":
