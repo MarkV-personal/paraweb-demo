@@ -31,6 +31,9 @@ For basic text messages:
 
 `python paraweb_creator_basic.py input_image.png --message "Your hidden message here" output_image.png`
 
+For multiple text messages on RGB channels:
+`python paraweb_creator_basic.py input_image.png --message "red message,green message,blue message" output_image.png` --d ","
+
 For whole HTML files:
 
 `python paraweb_creator_basic.py input_image.png --message-file path/to/your_message.txt output_image.png`

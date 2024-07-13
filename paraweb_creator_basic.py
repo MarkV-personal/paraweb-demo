@@ -12,13 +12,16 @@ def read_message_from_file(file_path):
         exit(1)
 
 
-def enhanced_encode_message(image_path, messages, output_path, message_file=None):
+def enhanced_encode_message(image_path, messages, output_path, delim=None, message_file=None):
     # If a message file is provided, override the message with the file's content
     if message_file:
         messages = read_message_from_file(message_file)
 
     if type(messages) == str:
-        messages = [messages, '', '']
+        if delim:
+            messages = messages.split(delim)
+        else:
+            messages = [messages, '', '']
     if not hasattr(messages, "__len__"):
         print(f"Error: message is of invalid data type: {messages}")
         return
@@ -74,6 +77,7 @@ def main():
     parser.add_argument('--message', type=str, default='', help='The message to encode into the image. Ignored if --message-file is provided.')
     parser.add_argument('--message-file', type=str, help='Path to a text or HTML file containing the message to encode. Overrides --message.')
     parser.add_argument('output_path', type=str, help='Path to save the encoded image')
+    parser.add_argument('--d', type=str, help='Delimeter used to separate the input message into messages for channel. Messages are placed in order of entry into R, G, B.')
     
     args = parser.parse_args()
 
@@ -82,7 +86,7 @@ def main():
         parser.error('No message provided. Use --message to specify a message or --message-file to specify a file containing the message.')
 
     try:
-        enhanced_encode_message(args.image_path, args.message, args.output_path, args.message_file)
+        enhanced_encode_message(args.image_path, args.message, args.output_path, args.d, args.message_file)
         print(f"Message successfully encoded and saved to {args.output_path}")
     except ValueError as e:
         print(f"Error: {e}")
